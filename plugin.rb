@@ -2,6 +2,14 @@
 # about: A super simple plugin to consume chargebee events
 # version: 0.0.1
 after_initialize do
+
+  add_model_callback User, :after_create do
+    if invite = Invite.find_by_email(email)
+      self.chargebee_id = invite.chargebee_id
+      save
+    end
+  end
+
   module ::Chargebee
     class Engine < ::Rails::Engine
       engine_name "chargebee"
