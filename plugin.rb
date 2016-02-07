@@ -25,9 +25,9 @@ after_initialize do
   class Chargebee::ChargebeeEventsController < ::ApplicationController
     requires_plugin 'discourse-chargebee'
 
-    skip_before_filter :verify_authenticity_token, only: [:create]
-
     def create
+      return unless api_key_valid?
+
       e = Chargebee::Event.create!(json_data: params.slice(
         :id, :occurred_at, :source, :object, :content, :event_type, :webhook_status
       ))
@@ -42,7 +42,7 @@ after_initialize do
           user = User.find_by_email(e.json_data['content']['customer']['email'])
           enable_user(user) if user
       end
-      render status: :ok, json: params
+      render status: :ok, json: e.json_data
     end
 
     private
