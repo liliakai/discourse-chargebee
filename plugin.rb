@@ -26,7 +26,7 @@ after_initialize do
     requires_plugin 'discourse-chargebee'
 
     def create
-      return unless api_key_valid?
+      raise Discourse::NotFound unless system_api_key_valid?
 
       e = Chargebee::Event.create!(json_data: params.slice(
         :id, :occurred_at, :source, :object, :content, :event_type, :webhook_status
@@ -69,6 +69,10 @@ after_initialize do
         user.suspended_at = nil
         user.save!
         StaffActionLogger.new(Discourse.system_user).log_user_unsuspend(user)
+      end
+
+      def system_api_key_valid?
+        ApiKey.where(key: request["api_key"], user: Discourse.system_user).exists?
       end
   end
 
