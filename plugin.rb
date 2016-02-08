@@ -32,14 +32,17 @@ after_initialize do
         :id, :occurred_at, :source, :object, :content, :event_type, :webhook_status
       ))
 
+      chargebee_id = e.json_data['content']['customer']['id']
       case(e.json_data['event_type'])
         when 'customer_created'
-          invite_user(e.json_data['content']['customer']['email'])
+          invite = invite_user(e.json_data['content']['customer']['email'])
+          invite.chargebee_id = chargebee_id
+          invite.save
         when 'subscription_cancelled'
-          user = User.find_by_email(e.json_data['content']['customer']['email'])
+          user = User.find_by_chargebee_id(chargebee_id)
           disable_user(user) if user
         when 'subscription_reactivated'
-          user = User.find_by_email(e.json_data['content']['customer']['email'])
+          user = User.find_by_chargebee_id(chargebee_id)
           enable_user(user) if user
       end
       render status: :ok, json: e.json_data
