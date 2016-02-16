@@ -1,6 +1,6 @@
 # name: discourse-chargebee
 # about: A super simple plugin to consume chargebee events
-# version: 0.0.1
+# version: 0.0.2
 after_initialize do
 
   add_model_callback User, :after_create do
